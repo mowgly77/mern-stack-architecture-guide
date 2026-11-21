@@ -1,0 +1,23 @@
+flowchart LR
+  Root["mern-project/"]
+  Root --> Apps["apps/"]
+  Root --> Docs["docs/architecture/<br/>ADRs + diagrams"]
+  Root --> RootFiles["docker-compose.yml · .env.example<br/>package.json · README.md"]
+
+  Apps --> Web["apps/web/<br/>React + Vite"]
+  Apps --> ApiApp["apps/api/<br/>Node.js + Express"]
+
+  Web --> WebFeatures["src/features/<br/>one folder per domain feature"]
+  Web --> WebComponents["src/components/<br/>shared UI, no business logic"]
+  Web --> WebServices["src/services/<br/>API client + endpoints"]
+  Web --> WebRoutes["src/routes/<br/>route tree + guards"]
+  Web --> WebMisc["src/hooks · src/types · src/utils"]
+
+  ApiApp --> ApiConfig["src/config/<br/>env parsing + settings"]
+  ApiApp --> ApiModules["src/modules/<br/>auth · workspaces · projects · tasks"]
+  ApiApp --> ApiMiddleware["src/middleware/<br/>auth · validate · errors"]
+  ApiApp --> ApiDatabase["src/database/<br/>connection + indexes"]
+  ApiApp --> ApiShared["src/shared/<br/>AppError · logger · utils"]
+  ApiApp --> ApiEntry["src/app.ts · src/server.ts"]
+
+  ApiModules --> ModuleFiles["projects/<br/>routes · controller · service<br/>repository · model · schemas · tests"]

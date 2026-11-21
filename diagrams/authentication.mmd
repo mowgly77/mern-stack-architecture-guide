@@ -1,0 +1,36 @@
+sequenceDiagram
+  autonumber
+  actor User
+  participant WebApp as React app
+  participant AuthApi as API · auth module
+  participant Sessions as MongoDB · sessions
+  participant Users as MongoDB · users
+
+  User->>WebApp: Submit email + password
+  WebApp->>AuthApi: POST /api/v1/auth/login
+  AuthApi->>AuthApi: Validate body (Zod) + rate limit
+  AuthApi->>Users: Find user by email
+  AuthApi->>AuthApi: Verify password hash (Argon2id)
+  alt credentials invalid
+    AuthApi-->>WebApp: 401 generic "Invalid credentials"
+  else credentials valid
+    AuthApi->>Sessions: Store SHA-256 hash of new refresh token
+    AuthApi-->>WebApp: 200 { accessToken } + Set-Cookie refresh (HttpOnly, Secure, SameSite)
+    WebApp->>WebApp: Keep access token in memory only
+  end
+
+  WebApp->>AuthApi: GET /api/v1/projects · Authorization: Bearer
+  AuthApi->>AuthApi: Verify JWT signature, exp, iss, aud
+  AuthApi->>AuthApi: Authorize role in workspace
+  AuthApi-->>WebApp: 200 data or 403 Forbidden
+
+  Note over WebApp,AuthApi: Access token expires (about 15 minutes)
+  WebApp->>AuthApi: POST /api/v1/auth/refresh (cookie sent automatically)
+  AuthApi->>Sessions: Find session by token hash
+  alt token already rotated (reuse detected)
+    AuthApi->>Sessions: Revoke every session in the token family
+    AuthApi-->>WebApp: 401 · force new login
+  else valid
+    AuthApi->>Sessions: Rotate: revoke old token, store new hash
+    AuthApi-->>WebApp: 200 { accessToken } + new refresh cookie
+  end

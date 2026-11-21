@@ -1,0 +1,33 @@
+flowchart TB
+  Users(["Users · browsers"])
+
+  subgraph Edge["Edge"]
+    Cdn["CDN · static hosting<br/>apps/web build"]
+    Proxy["Load balancer<br/>TLS termination"]
+  end
+
+  ApiCluster[["API containers · instances 1..N<br/>Node.js LTS + Express · stateless"]]
+
+  subgraph DataLayer["Data · private network"]
+    Mongo[("MongoDB replica set<br/>managed")]
+    Backups[("Automated backups")]
+  end
+
+  subgraph Platform["Platform services"]
+    Secrets["Secrets manager<br/>JWT keys · DB URI"]
+    Observability["Observability<br/>logs · metrics · alerts"]
+  end
+
+  subgraph ThirdParty["External services"]
+    Email["Transactional email"]
+    ObjectStore["Object storage"]
+  end
+
+  Users -- "HTTPS" --> Cdn
+  Users -- "HTTPS /api" --> Proxy
+  Proxy --> ApiCluster
+  ApiCluster -- "TLS · Mongoose" --> Mongo
+  Mongo --> Backups
+  Secrets -. "env at runtime" .-> ApiCluster
+  ApiCluster -. "structured logs" .-> Observability
+  ApiCluster -- "HTTPS" --> ThirdParty

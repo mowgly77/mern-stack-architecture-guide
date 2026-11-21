@@ -1,0 +1,13 @@
+flowchart TB
+  Push["Git push / pull request"] --> Install["Install<br/>npm ci"]
+  Install --> Lint["Lint + typecheck<br/>ESLint · tsc --noEmit"]
+  Lint --> Tests["Tests<br/>unit + API integration"]
+  Tests --> Build["Build<br/>web bundle + api dist"]
+  Build --> Docker["Docker image<br/>tag = commit SHA"]
+  Docker --> Registry[("Container registry")]
+  Registry --> Staging["Deploy to staging"]
+  Staging --> Smoke["Smoke / E2E tests<br/>Playwright"]
+  Smoke --> Approval{"Merged to main<br/>+ approval?"}
+  Approval -- "yes" --> Production["Deploy to production"]
+  Approval -- "no" --> Stop(["Stop · fix forward"])
+  Production --> Monitoring["Monitoring<br/>logs · metrics · error tracking · alerts"]

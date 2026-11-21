@@ -1,0 +1,53 @@
+erDiagram
+  USER ||--o{ SESSION : "owns"
+  USER ||--o{ WORKSPACE_MEMBER : "userId"
+  WORKSPACE ||--|{ WORKSPACE_MEMBER : "embeds members[]"
+  WORKSPACE ||--o{ PROJECT : "workspaceId"
+  PROJECT ||--o{ TASK : "projectId"
+  USER |o--o{ TASK : "assigneeId"
+  TASK ||--o{ CHECKLIST_ITEM : "embeds checklist[]"
+
+  USER {
+    ObjectId _id PK
+    string email UK
+    string passwordHash
+    string name
+    date createdAt
+  }
+  SESSION {
+    ObjectId _id PK
+    ObjectId userId FK
+    string tokenHash UK
+    string familyId
+    date expiresAt "TTL index"
+    date revokedAt
+  }
+  WORKSPACE {
+    ObjectId _id PK
+    string name
+    string slug UK
+    date createdAt
+  }
+  WORKSPACE_MEMBER {
+    ObjectId userId FK
+    string role "owner | admin | member"
+  }
+  PROJECT {
+    ObjectId _id PK
+    ObjectId workspaceId FK
+    string name
+    string status "active | archived"
+    date createdAt
+  }
+  TASK {
+    ObjectId _id PK
+    ObjectId projectId FK
+    ObjectId assigneeId FK
+    string title
+    string status "todo | doing | done"
+    date dueDate
+  }
+  CHECKLIST_ITEM {
+    string text
+    boolean done
+  }

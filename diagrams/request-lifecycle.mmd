@@ -1,0 +1,30 @@
+sequenceDiagram
+  autonumber
+  participant Browser
+  participant ReactComponent as React UI
+  participant ApiClient as API client
+  participant ExpressRouter as Router
+  participant Middleware as Middleware
+  participant Controller
+  participant Service
+  participant Repository
+  participant MongoDB as MongoDB
+
+  Browser->>ReactComponent: User action
+  ReactComponent->>ApiClient: useMutation(createProject)
+  ApiClient->>ExpressRouter: POST /api/v1/workspaces/:id/projects
+  ExpressRouter->>Middleware: requireAuth → validate(schema)
+  alt token or payload invalid
+    Middleware-->>ApiClient: 401 / 400 error envelope
+  else valid request
+    Middleware->>Controller: req.user + parsed body
+    Controller->>Service: createProject(input, actor)
+    Service->>Repository: business rules passed
+    Repository->>MongoDB: insertOne(project)
+    MongoDB-->>Repository: inserted document
+    Repository-->>Service: Project entity
+    Service-->>Controller: ProjectDto
+    Controller-->>ApiClient: 201 Created · JSON
+  end
+  ApiClient-->>ReactComponent: typed data or ApiError
+  ReactComponent-->>Browser: Re-render UI

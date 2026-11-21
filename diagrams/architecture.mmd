@@ -1,0 +1,33 @@
+flowchart TB
+  User(["End user"])
+
+  subgraph Client["Client tier"]
+    WebApp["React SPA<br/>apps/web · Vite + TypeScript"]
+    ServerState["TanStack Query<br/>server-state cache"]
+  end
+
+  subgraph Api["API tier · apps/api · Node.js LTS + Express"]
+    Router["Express Router<br/>/api/v1/*"]
+    Middleware["Middleware<br/>helmet · cors · rate limit · auth · validation"]
+    Modules["Feature modules<br/>controller → service → repository"]
+    AuthModule["Auth module<br/>JWT access token + refresh session"]
+  end
+
+  subgraph Data["Data tier"]
+    MongoDB[("MongoDB<br/>replica set")]
+  end
+
+  subgraph External["External services"]
+    Email["Transactional email"]
+    Storage["Object storage"]
+  end
+
+  User --> WebApp
+  WebApp --> ServerState
+  ServerState -- "HTTPS · JSON" --> Router
+  Router --> Middleware --> Modules
+  Middleware --> AuthModule
+  Modules -- "Mongoose" --> MongoDB
+  AuthModule -- "Mongoose" --> MongoDB
+  Modules -- "HTTPS" --> Email
+  Modules -- "HTTPS · signed URLs" --> Storage
